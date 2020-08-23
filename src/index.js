@@ -1,8 +1,9 @@
-const express = require('express');
-const { v4: uuid_v4, validate: isUuid } = require('uuid');
+const express = require("express");
+const cors = require("cors");
+const { v4: uuid_v4, validate: isUuid } = require("uuid");
 
 const app = express();
-
+app.use(cors());
 app.use(express.json());
 
 const projects = [];
@@ -21,53 +22,53 @@ function validateProjectId(request, response, next) {
   const { id } = request.params;
 
   if (!isUuid(id)) {
-    return response.status(400).json({ error: "Invalid project ID." })
+    return response.status(400).json({ error: "Invalid project ID." });
   }
 }
 
 app.use(logRequests);
 
-app.get('/projects', (request, response) => {
+app.get("/projects", (request, response) => {
   const { title } = request.query;
 
-  const results = title 
-    ? projects.filter(project => project.title.includes(title))
+  const results = title
+    ? projects.filter((project) => project.title.includes(title))
     : projects;
-  
+
   return response.json(results);
 });
 
-app.post('/projects', (request, response) => {
+app.post("/projects", (request, response) => {
   const { title, owner } = request.body;
   const project = { id: uuid_v4(), title, owner };
-  
+
   projects.push(project);
 
-  return response.json(project); 
+  return response.json(project);
 });
 
-app.put('/projects/:id', validateProjectId, (request, response) => {
+app.put("/projects/:id", validateProjectId, (request, response) => {
   const { id } = request.params;
   const { title, owner } = request.body;
-  
+
   const project = { id, title, owner };
-  const projectIdx = projects.findIndex(proj => proj.id === id);
-  
+  const projectIdx = projects.findIndex((proj) => proj.id === id);
+
   if (projectIdx < 0) {
-    return response.status(400).json({ error: "Project not found."})
+    return response.status(400).json({ error: "Project not found." });
   }
-  
+
   projects[projectIdx] = project;
-  
-  return response.json(project); 
+
+  return response.json(project);
 });
 
-app.delete('/projects/:id', validateProjectId, (request, response) => {
+app.delete("/projects/:id", validateProjectId, (request, response) => {
   const { id } = request.params;
-  const projectIdx = projects.findIndex(project => project.id === id);
-  
+  const projectIdx = projects.findIndex((project) => project.id === id);
+
   if (projectIdx < 0) {
-    return response.status(400).json({ error: "Project not found."})
+    return response.status(400).json({ error: "Project not found." });
   }
 
   projects.splice(projectIdx, 1);
@@ -75,5 +76,5 @@ app.delete('/projects/:id', validateProjectId, (request, response) => {
 });
 
 app.listen(3333, () => {
-  console.log('📌 Backend started!')
+  console.log("📌 Backend started!");
 });
